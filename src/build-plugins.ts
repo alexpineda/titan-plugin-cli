@@ -1,5 +1,5 @@
 import path from "node:path";
-
+import semver from "semver";
 import esbuild from "esbuild";
 import { fileExists } from "./files";
 
@@ -38,6 +38,15 @@ export const build = async (repository: Repository, outDir: string) => {
     for (const { sourceFolderPath, manifest, folderName } of packages) {
         if (manifest.deprecated) {
             continue;
+        }
+        if (manifest.peerDependencies && manifest.peerDependencies["@titan-reactor-runtime/host"] && manifest.peerDependencies["@titan-reactor-runtime/ui"]) {
+            // semver major and minor must match
+            const hostVersion = manifest.peerDependencies["@titan-reactor-runtime/host"];
+            const uiVersion = manifest.peerDependencies["@titan-reactor-runtime/ui"];
+            if (semver.major(hostVersion) !== semver.major(uiVersion) || semver.minor(hostVersion) !== semver.minor(uiVersion)) {
+                console.log("Host and UI peer dependencies versions must match. Skipping", folderName);
+                continue;
+            }
         }
         const hostFilePath = path.join(sourceFolderPath, "src", "index.ts");
         const uiFilePath = path.join(sourceFolderPath, "src", "components", "index");
