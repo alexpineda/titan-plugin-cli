@@ -12,8 +12,11 @@ if (args.length !== 2) {
 }
 
 const tryBuild = async () => {
-    if (await fileExists(args[0]) && await fileExists(args[1])) {
+    if (await fileExists(args[0])) {
         build( getLocalRepositoryManifests( args[0] ), args[1] );
+    } else {
+        console.error(`The path ${args[0]} does not exist.`);
+        process.exit(1);
     }
 }
 
