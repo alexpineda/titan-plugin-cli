@@ -2,7 +2,6 @@ import readFolder from "./files";
 import { readFileSync } from "fs";
 import path from "node:path";
 import { ExtractedPluginManifest } from "./plugin-manifest";
-import semver from "semver";
 
 
 export const getLocalRepositoryManifests = (dir: string) => async () => {
