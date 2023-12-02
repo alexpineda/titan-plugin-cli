@@ -6,6 +6,7 @@ import { copyFileSync, writeFileSync } from "node:fs";
 import { ExtractedPluginManifest } from "./plugin-manifest";
 import { makeConfigTypes } from "./make-config-types";
 import sanitize from "sanitize-filename";
+import { buildMigrations } from "./build-migrations";
 
 const external = [
   "@titan-reactor-runtime/ui",
@@ -89,8 +90,10 @@ export const build = async (
     files: [],
   };
 
+  console.log(`building ${path.join(outFolderName)}`);
+
+
   for (const file of files) {
-    console.log(file.type + " file found", file);
 
     try {
       const outfile = path.join(outDir, outFolderName, "dist", file.type);
@@ -118,6 +121,14 @@ export const build = async (
   }
 
   try {
+    if (await fileExists(path.join(sourceFolderPath, "src", "migrations"))) {
+      idx.files.push(...await buildMigrations(path.join(sourceFolderPath, "src", "migrations"), path.join(outDir, outFolderName, "dist")));
+    }
+  } catch (error) {
+    console.error("error building migrations", error);
+  }
+
+  try {
     copyFileSync(
       path.join(sourceFolderPath, "package.json"),
       path.join(outDir, outFolderName, "package.json")
@@ -136,6 +147,7 @@ export const build = async (
         path.join(outDir, outFolderName, "readme.md")
       );
     }
+    console.log(idx)
     return idx;
   } catch (error) {
     console.error("error building manifest", error);
